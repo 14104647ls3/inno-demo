@@ -1,22 +1,24 @@
-const STATUS_ON_DECK = { id: 1, name: "On Deck", color: "blue.300" };
+const STATUS_ON_HOLD = { id: 1, name: "On Hold", color: "blue.300" };
 const STATUS_IN_PROGRESS = {
   id: 2,
   name: "In Progress",
   color: "yellow.400",
 };
-const STATUS_TESTING = { id: 3, name: "Testing", color: "pink.300" };
-const STATUS_DEPLOYED = { id: 4, name: "Deployed", color: "green.300" };
+const STATUS_RE_ENGAGEMENT = { id: 3, name: "Re-engagement", color: "pink.300" };
+const STATUS_PROPOSAL_SENT = { id: 4, name: "Proposal Sent", color: "green.300" };
+const STATUS_CLOSED = { id: 5, name: "Closed", color: "red.300" };
 export const STATUSES = [
-  STATUS_ON_DECK,
+  STATUS_ON_HOLD,
   STATUS_IN_PROGRESS,
-  STATUS_TESTING,
-  STATUS_DEPLOYED,
+  STATUS_RE_ENGAGEMENT,
+  STATUS_PROPOSAL_SENT,
+  STATUS_CLOSED,
 ];
 
 const DATA = [
   {
     task: "Add a New Feature",
-    status: STATUS_ON_DECK,
+    status: STATUS_ON_HOLD,
     due: new Date("2023/10/15"),
     notes: "This is a note",
   },
@@ -28,7 +30,7 @@ const DATA = [
   },
   {
     task: "Add Instagram Integration",
-    status: STATUS_DEPLOYED,
+    status: STATUS_RE_ENGAGEMENT,
     due: null,
     notes: "",
   },
@@ -40,7 +42,7 @@ const DATA = [
   },
   {
     task: "Refactor API Endpoints",
-    status: STATUS_TESTING,
+    status: STATUS_PROPOSAL_SENT,
     due: null,
     notes: "",
   },
@@ -64,7 +66,7 @@ const DATA = [
   },
   {
     task: "Implement User Authentication",
-    status: STATUS_ON_DECK,
+    status: STATUS_ON_HOLD,
     due: new Date("2023/11/08"),
     notes: "OAuth2 and JWT auth.",
   },
@@ -88,7 +90,7 @@ const DATA = [
   },
   {
     task: "Create User Onboarding Tutorial",
-    status: STATUS_ON_DECK,
+    status: STATUS_ON_HOLD,
     due: new Date("2023/11/15"),
     notes: "User onboarding guide.",
   },
@@ -106,13 +108,13 @@ const DATA = [
   },
   {
     task: "Implement Continuous Integration",
-    status: STATUS_ON_DECK,
+    status: STATUS_ON_HOLD,
     due: new Date("2023/11/01"),
     notes: "Set up CI/CD pipelines.",
   },
   {
     task: "Migrate to Cloud Hosting",
-    status: STATUS_DEPLOYED,
+    status: STATUS_CLOSED,
     due: null,
     notes: "Cloud migration.",
   },
@@ -124,7 +126,7 @@ const DATA = [
   },
   {
     task: "Update User Documentation",
-    status: STATUS_TESTING,
+    status: STATUS_RE_ENGAGEMENT,
     due: null,
     notes: "Revise documentation.",
   },

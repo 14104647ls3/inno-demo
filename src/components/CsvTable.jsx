@@ -11,22 +11,25 @@ import {
 import { fetchTableData } from "../services/api";
 import SortIcon from "./icons/SortIcon";
 import { Link } from "react-router-dom";
+import StatusCell from "./StatusCell";
+import EditableCell from "./EditableCell";
 
 const columns = [
-    { accessorKey: "date", header: "Date" },
-    { accessorKey: "lead_owner", header: "Lead Owner" },
-    { accessorKey: "source", header: "Source" },
-    { accessorKey: "deal_stage", header: "Deal Stage" },
-    { accessorKey: "account_id", header: "Account ID" },
-    { accessorKey: "first_name", header: "First Name" },
-    { accessorKey: "last_name", header: "Last Name" },
-    { accessorKey: "company", header: "Company" },
+    { accessorKey: "date", header: "Date", cell: EditableCell },
+    { accessorKey: "lead_owner", header: "Lead Owner", cell: EditableCell },
+    { accessorKey: "source", header: "Source", cell: EditableCell },
+    { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell },
+    { accessorKey: "account_id", header: "Account ID", cell: EditableCell },
+    { accessorKey: "first_name", header: "First Name", cell: EditableCell },
+    { accessorKey: "last_name", header: "Last Name", cell: EditableCell },
+    { accessorKey: "company", header: "Company", cell: EditableCell },
 ];
 
 const CsvTable = ({ tableName }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,6 +57,20 @@ const CsvTable = ({ tableName }) => {
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         columnResizeMode: "onChange",
+        meta: {
+            isEditing,
+            updateData: (rowIndex, columnId, value) =>
+                setData((prev) =>
+                    prev.map((row, index) =>
+                        index === rowIndex
+                            ? {
+                                ...prev[rowIndex],
+                                [columnId]: value,
+                            }
+                            : row
+                    )
+                ),
+        },
     });
 
     if (loading) return <Spinner />;
@@ -61,6 +78,11 @@ const CsvTable = ({ tableName }) => {
 
     return (
         <Box>
+            <Box mb={4} display="flex" justifyContent="flex-end">
+                <Button onClick={() => setIsEditing(!isEditing)} colorScheme={isEditing ? "blue" : "gray"}>
+                    {isEditing ? "Done Editing" : "Edit Mode"}
+                </Button>
+            </Box>
             <Box className="table" w={table.getTotalSize()}>
                 {table.getHeaderGroups().map((headerGroup) => (
                     <Box className="tr" key={headerGroup.id}>
