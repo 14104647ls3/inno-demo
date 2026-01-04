@@ -7,19 +7,14 @@ import {
 } from "@chakra-ui/react";
 import SearchIcon from "./icons/SearchIcon";
 import FilterPopover from "./FilterPopover";
+import DateFilter from "./DateFilter";
 
-const Filters = ({ columnFilters, setColumnFilters }) => {
-  const taskName = columnFilters.find((f) => f.id === "task")?.value || "";
+const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter }) => {
+  const filterValue = globalFilter || "";
 
-  const onFilterChange = (id, value) =>
-    setColumnFilters((prev) =>
-      prev
-        .filter((f) => f.id !== id)
-        .concat({
-          id,
-          value,
-        })
-    );
+  const onFilterChange = (value) => {
+    setGlobalFilter(value || undefined);
+  };
 
   return (
     <HStack mb={6} spacing={3}>
@@ -30,12 +25,16 @@ const Filters = ({ columnFilters, setColumnFilters }) => {
         <Input
           type="text"
           variant="filled"
-          placeholder="Task name"
+          placeholder="Filter"
           borderRadius={5}
-          value={taskName}
-          onChange={(e) => onFilterChange("task", e.target.value)}
+          value={filterValue}
+          onChange={(e) => onFilterChange(e.target.value)}
         />
       </InputGroup>
+      <DateFilter
+        columnFilters={columnFilters}
+        setColumnFilters={setColumnFilters}
+      />
       <FilterPopover
         columnFilters={columnFilters}
         setColumnFilters={setColumnFilters}

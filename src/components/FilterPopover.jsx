@@ -28,23 +28,22 @@ const StatusItem = ({ status, setColumnFilters, isActive }) => (
     }}
     onClick={() =>
       setColumnFilters((prev) => {
-        const statuses = prev.find((filter) => filter.id === "status")?.value;
+        const statuses = prev.find((filter) => filter.id === "deal_stage")?.value;
         if (!statuses) {
           return prev.concat({
-            id: "status",
-            value: [status.id],
+            id: "deal_stage",
+            value: [status.name],
           });
         }
 
-        return prev.map((f) =>
-          f.id === "status"
-            ? {
-                ...f,
-                value: isActive
-                  ? statuses.filter((s) => s !== status.id)
-                  : statuses.concat(status.id),
-              }
-            : f
+        return prev.map((f) => f.id === "deal_stage"
+          ? {
+            ...f,
+            value: isActive
+              ? statuses.filter((s) => s !== status.name)
+              : statuses.concat(status.name),
+          }
+          : f
         );
       })
     }
@@ -56,7 +55,7 @@ const StatusItem = ({ status, setColumnFilters, isActive }) => (
 
 const FilterPopover = ({ columnFilters, setColumnFilters }) => {
   const filterStatuses =
-    columnFilters.find((f) => f.id === "status")?.value || [];
+    columnFilters.find((f) => f.id === "deal_stage")?.value || [];
 
   return (
     <Popover isLazy>
@@ -66,7 +65,7 @@ const FilterPopover = ({ columnFilters, setColumnFilters }) => {
           color={filterStatuses.length > 0 ? "blue.300" : ""}
           leftIcon={<Icon as={FilterIcon} fontSize={18} />}
         >
-          Filter
+          Deal Stage
         </Button>
       </PopoverTrigger>
       <PopoverContent>
@@ -83,7 +82,7 @@ const FilterPopover = ({ columnFilters, setColumnFilters }) => {
             {STATUSES.map((status) => (
               <StatusItem
                 status={status}
-                isActive={filterStatuses.includes(status.id)}
+                isActive={filterStatuses.includes(status.name)}
                 setColumnFilters={setColumnFilters}
                 key={status.id}
               />
