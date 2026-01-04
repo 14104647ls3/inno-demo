@@ -53,9 +53,12 @@ export const fetchTableData = async (id) => {
 
     const { data, error } = await supabase
         .from(tableName)
-        .select("*");
+        .select("*")
+        .order('id', { ascending: true })
 
     if (error) throw error;
+    // log the total number of rows
+    console.log("Total rows:", data.length);
     return data;
 };
 
@@ -98,6 +101,42 @@ export const insertTableData = async (tableName, data) => {
     const { error } = await supabase
         .from(tableName)
         .insert(data);
+
+    if (error) throw error;
+};
+
+/**
+ * Updates a specific row in a table.
+ * @param {string} tableName 
+ * @param {string} rowId 
+ * @param {Object} updates 
+ */
+export const updateTableRow = async (tableName, rowId, updates) => {
+    // Determine the actual table name
+    const actualTableName = tableName.startsWith("leads_") ? tableName : `leads_${tableName}`;
+
+    const { error } = await supabase
+        .from(actualTableName)
+        .update(updates)
+        .eq('id', rowId);
+
+    if (error) throw error;
+};
+
+/**
+ * Updates multiple rows in a table in a single batch.
+ * @param {string} tableName 
+ * @param {Array} updates Array of objects, each must contain 'id'
+ */
+export const batchUpdateTableRows = async (tableName, updates) => {
+    if (!updates || updates.length === 0) return;
+
+    // Determine the actual table name
+    const actualTableName = tableName.startsWith("leads_") ? tableName : `leads_${tableName}`;
+
+    const { error } = await supabase
+        .from(actualTableName)
+        .upsert(updates);
 
     if (error) throw error;
 };

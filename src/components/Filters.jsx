@@ -4,12 +4,13 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Button
 } from "@chakra-ui/react";
 import SearchIcon from "./icons/SearchIcon";
 import FilterPopover from "./FilterPopover";
 import DateFilter from "./DateFilter";
 
-const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter }) => {
+const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter, isEditing, onToggleEdit }) => {
   const filterValue = globalFilter || "";
 
   const onFilterChange = (value) => {
@@ -39,7 +40,13 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
         columnFilters={columnFilters}
         setColumnFilters={setColumnFilters}
       />
+      {onToggleEdit && (
+        <Button onClick={onToggleEdit} colorScheme={isEditing ? "blue" : "gray"} size="sm">
+          {isEditing ? "Done Editing" : "Edit Mode"}
+        </Button>
+      )}
     </HStack>
+
   );
 };
 export default Filters;
