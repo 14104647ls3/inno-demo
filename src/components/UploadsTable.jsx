@@ -6,7 +6,7 @@ import {
     getCoreRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import supabase from "../services/supabase";
+import { fetchMasterUploads } from "../services/api";
 
 const UploadsTable = () => {
     const [data, setData] = useState([]);
@@ -14,15 +14,11 @@ const UploadsTable = () => {
 
     const fetchUploads = async () => {
         setLoading(true);
-        const { data: uploads, error } = await supabase
-            .from('master_uploads')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching uploads:', error);
-        } else {
+        try {
+            const uploads = await fetchMasterUploads();
             setData(uploads || []);
+        } catch (error) {
+            console.error('Error fetching uploads:', error);
         }
         setLoading(false);
     };

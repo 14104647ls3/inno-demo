@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Box, Heading, Button, Text, Input, FormControl, FormLabel, useToast, Progress } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import Papa from "papaparse";
-import supabase from "../services/supabase";
+import { createMasterEntry, createTableSchema, insertTableData } from "../services/api";
 import UploadsTable from "../components/UploadsTable";
 
 const UploadPage = () => {
@@ -45,25 +45,12 @@ const UploadPage = () => {
                     const cleanFileName = file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
                     const uniqueTableName = `leads_${cleanFileName}_${timestamp}`; // e.g. leads_sample_csv_123456
 
-                    const { error: masterError } = await supabase
-                        .from("master_uploads")
-                        .insert([
-                            {
-                                filename: file.name,
-                                table_name: uniqueTableName
-                            }
-                        ]);
-
-                    if (masterError) throw masterError;
+                    await createMasterEntry(file.name, uniqueTableName);
 
                     setProgress(50);
 
                     // 2. Create Table with Fixed Schema using RPC
-                    const { error: rpcError } = await supabase.rpc("create_leads_table", {
-                        table_name: uniqueTableName
-                    });
-
-                    if (rpcError) throw rpcError;
+                    await createTableSchema(uniqueTableName);
 
                     setProgress(70);
 
@@ -88,11 +75,7 @@ const UploadPage = () => {
                     }).filter(row => row.date || row.lead_owner); // Filter out potentially empty parsing artifacts
 
                     // Insert in batches
-                    const { error: insertError } = await supabase
-                        .from(uniqueTableName)
-                        .insert(formattedData);
-
-                    if (insertError) throw insertError;
+                    await insertTableData(uniqueTableName, formattedData);
 
                     setProgress(100);
                     toast({

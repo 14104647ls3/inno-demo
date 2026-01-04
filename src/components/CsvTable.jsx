@@ -8,7 +8,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import supabase from "../services/supabase";
+import { fetchTableData } from "../services/api";
 import SortIcon from "./icons/SortIcon";
 import { Link } from "react-router-dom";
 
@@ -31,15 +31,12 @@ const CsvTable = ({ tableName }) => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const { data: tableData, error } = await supabase
-                .from(tableName)
-                .select("*");
-
-            if (error) {
-                console.error("Error fetching table data:", error);
-                setError(error.message);
-            } else {
+            try {
+                const tableData = await fetchTableData(tableName);
                 setData(tableData || []);
+            } catch (err) {
+                console.error("Error fetching table data:", err);
+                setError(err.message);
             }
             setLoading(false);
         };
