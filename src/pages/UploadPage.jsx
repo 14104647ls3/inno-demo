@@ -3,11 +3,13 @@ import { Box, Heading, Button, Text, Input, FormControl, FormLabel, useToast, Pr
 import { Link } from "react-router-dom";
 import Papa from "papaparse";
 import supabase from "../services/supabase";
+import UploadsTable from "../components/UploadsTable";
 
 const UploadPage = () => {
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [uploadKey, setUploadKey] = useState(0);
     const toast = useToast();
 
     const handleFileChange = (e) => {
@@ -100,6 +102,7 @@ const UploadPage = () => {
                         duration: 5000,
                         isClosable: true,
                     });
+                    setUploadKey(prev => prev + 1);
 
                 } catch (error) {
                     console.error("Upload failed:", error);
@@ -131,13 +134,13 @@ const UploadPage = () => {
         <Box maxW={1000} mx="auto" px={6} pt={24} fontSize="sm">
             <Heading mb={10}>Upload CSV</Heading>
 
-            <Box mb={6}>
+            {/* <Box mb={6}>
                 <Button as={Link} to="/" colorScheme="teal" variant="outline" mb={4}>
                     Back to Home
                 </Button>
-            </Box>
+            </Box> */}
 
-            <Box p={6} borderWidth={1} borderRadius="md" boxShadow="sm">
+            <Box p={6} borderWidth={1} borderRadius="md" boxShadow="sm" mb={10}>
                 <FormControl mb={4}>
                     <FormLabel>Select CSV File</FormLabel>
                     <Input
@@ -164,6 +167,9 @@ const UploadPage = () => {
                     {loading ? "Uploading..." : "Upload & Seed Database"}
                 </Button>
             </Box>
+
+            <Heading size="md" mb={4}>Uploaded Files</Heading>
+            <UploadsTable key={uploadKey} />
         </Box>
     );
 };
