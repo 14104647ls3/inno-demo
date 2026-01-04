@@ -24,7 +24,7 @@ begin
   execute format('
     create table %I (
       id uuid default uuid_generate_v4() primary key,
-      "date" text,
+      "date" date,
       "lead_owner" text,
       "source" text,
       "deal_stage" text,

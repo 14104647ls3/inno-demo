@@ -15,6 +15,8 @@ import {
     useToast
 } from "@chakra-ui/react";
 import { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { STATUSES } from "../data";
 
 const AddRowModal = ({ isOpen, onClose, onAdd }) => {
@@ -72,11 +74,27 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
                     <VStack spacing={4}>
                         <FormControl isRequired>
                             <FormLabel>Date</FormLabel>
-                            <Input
+                            {/* <Input
                                 type="date"
                                 name="date"
                                 value={formData.date}
                                 onChange={handleChange}
+                            /> */}
+                            <DatePicker
+                                selected={formData.date ? new Date(formData.date + 'T00:00:00') : null}
+                                onChange={(date) => {
+                                    if (!date) {
+                                        setFormData(prev => ({ ...prev, date: "" }));
+                                        return;
+                                    }
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    setFormData(prev => ({ ...prev, date: `${year}-${month}-${day}` }));
+                                }}
+                                dateFormat="MM/dd/yyyy"
+                                className="chakra-input css-1c6j008" // mimicing chakra input style or use customInput
+                                customInput={<Input />}
                             />
                         </FormControl>
 

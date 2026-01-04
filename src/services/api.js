@@ -140,3 +140,42 @@ export const batchUpdateTableRows = async (tableName, updates) => {
 
     if (error) throw error;
 };
+
+/**
+ * Adds a new row to the table.
+ * @param {string} tableName 
+ * @param {Object} rowData 
+ */
+export const addTableRow = async (tableName, rowData) => {
+    // Determine the actual table name
+    const actualTableName = tableName.startsWith("leads_") ? tableName : `leads_${tableName}`;
+
+    const { data, error } = await supabase
+        .from(actualTableName)
+        .insert([rowData])
+        .select();
+
+    if (error) throw error;
+    return data;
+};
+
+/**
+ * Deletes multiple rows from the table.
+ * @param {string} tableName 
+ * @param {Array<string>} rowIds 
+ */
+export const deleteTableRows = async (tableName, rowIds) => {
+    if (!rowIds || rowIds.length === 0) return;
+
+    // Determine the actual table name
+    const actualTableName = tableName.startsWith("leads_") ? tableName : `leads_${tableName}`;
+
+    const { error } = await supabase
+        .from(actualTableName)
+        .delete()
+        .in('id', rowIds);
+
+    if (error) throw error;
+
+    return rowIds;
+};

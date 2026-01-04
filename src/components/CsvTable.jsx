@@ -16,6 +16,7 @@ import EditableCell from "./EditableCell";
 import Filters from "./Filters";
 import AddRowModal from "./AddRowModal";
 import EditToolbar from "./EditToolbar";
+import DateCell from "./DateCell";
 
 const dateFilterFn = (row, columnId, filterValue) => {
     const { start, end } = filterValue || {};
@@ -50,7 +51,7 @@ const multiSelectFilter = (row, columnId, filterValue) => {
 };
 
 const columns = [
-    { accessorKey: "date", header: "Date", cell: EditableCell, filterFn: dateFilterFn, enableGlobalFilter: false },
+    { accessorKey: "date", header: "Date", cell: DateCell, filterFn: dateFilterFn, enableGlobalFilter: false },
     { accessorKey: "lead_owner", header: "Lead Owner", cell: EditableCell },
     { accessorKey: "source", header: "Source", cell: EditableCell },
     { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell, filterFn: multiSelectFilter }, // Removed enableGlobalFilter: false
@@ -77,21 +78,23 @@ const CsvTable = ({ tableName }) => {
             {
                 id: "select",
                 header: ({ table }) => (
-                    <Box display="flex" alignItems="center" gap={2}>
+                    <Box display="flex" alignItems="center">
                         <input
                             type="checkbox"
                             checked={table.getIsAllRowsSelected()}
                             onChange={table.getToggleAllRowsSelectedHandler()}
                         />
-                        <Text fontSize="sm">Select All</Text>
-                    </Box>
+                    </Box >
                 ),
                 cell: ({ row }) => (
                     <input
                         type="checkbox"
                         checked={row.getIsSelected()}
                         disabled={!row.getCanSelect()}
-                        onChange={row.getToggleSelectedHandler()}
+                        onChange={(e) => {
+                            console.log("Selecting row ID:", row.original.id);
+                            row.getToggleSelectedHandler()(e);
+                        }}
                     />
                 ),
             },
@@ -215,7 +218,7 @@ const CsvTable = ({ tableName }) => {
     };
 
     const handleDeleteRows = async () => {
-        const selectedRowIds = Object.keys(rowSelection).map(idx => data[idx].id);
+        const selectedRowIds = Object.keys(rowSelection);
 
         if (selectedRowIds.length === 0) return;
 
@@ -256,6 +259,7 @@ const CsvTable = ({ tableName }) => {
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getRowId: (row) => row.id, // Use row.id as the unique identifier
         enableRowSelection: true, // Enable row selection
         onRowSelectionChange: setRowSelection, // Update state
         initialState: {

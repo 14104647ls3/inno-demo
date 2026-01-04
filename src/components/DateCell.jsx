@@ -4,24 +4,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import CalendarIcon from "./icons/CalendarIcon";
 
-const DateCustomInput = forwardRef(({ value, onClick, clearDate }, ref) => (
-  <Center ref={ref} onClick={onClick} cursor="pointer">
+const DateCustomInput = forwardRef(({ value, onClick }, ref) => (
+  <Center ref={ref} onClick={onClick} cursor="pointer" w="100%">
     {value ? (
-      <>
-        {value}
-        <Box
-          pos="absolute"
-          right={3}
-          fontSize="md"
-          color="red.300"
-          onClick={(e) => {
-            e.stopPropagation();
-            clearDate();
-          }}
-        >
-          &times;
-        </Box>
-      </>
+      <>{value}</>
     ) : (
       <Icon as={CalendarIcon} fontSize="xl" />
     )}
@@ -29,19 +15,35 @@ const DateCustomInput = forwardRef(({ value, onClick, clearDate }, ref) => (
 ));
 
 const DateCell = ({ getValue, row, column, table }) => {
-  const date = getValue();
-  const { updateData } = table.options.meta;
+  const dateStr = getValue();
+  const { updateData, isEditing } = table.options.meta;
+
+  // Parse YYYY-MM-DD string to Date object
+  const dateObj = dateStr ? new Date(dateStr + 'T00:00:00') : null;
+
+  // Format for display
+  const displayDate = dateObj ?
+    `${String(dateObj.getMonth() + 1).padStart(2, '0')}/${String(dateObj.getDate()).padStart(2, '0')}/${dateObj.getFullYear()}`
+    : "";
+
+  if (!isEditing) {
+    return <Box pl={4}>{displayDate}</Box>; // Create consistent padding/alignment with input
+  }
+
   return (
     <DatePicker
       wrapperClassName="date-wrapper"
-      dateFormat="MMM d"
-      selected={date}
-      onChange={(date) => updateData(row.index, column.id, date)}
-      customInput={
-        <DateCustomInput
-          clearDate={() => updateData(row.index, column.id, null)}
-        />
-      }
+      dateFormat="MM/dd/yyyy"
+      selected={dateObj}
+      onChange={(date) => {
+        if (!date) return; // Prevent clearing
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const formatted = `${year}-${month}-${day}`;
+        updateData(row.index, column.id, formatted);
+      }}
+      customInput={<DateCustomInput />}
     />
   );
 };
