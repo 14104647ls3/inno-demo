@@ -1,5 +1,28 @@
 import supabase from "./supabase";
 
+const MOCK_LEADS = [
+    {
+        date: "2024-01-01",
+        lead_owner: "John Doe",
+        source: "Referral",
+        deal_stage: "Interest",
+        account_id: "ACC-001",
+        first_name: "Alice",
+        last_name: "Smith",
+        company: "Acme Corp"
+    },
+    {
+        date: "2024-01-02",
+        lead_owner: "Jane Roe",
+        source: "Website",
+        deal_stage: "Closed Won",
+        account_id: "ACC-002",
+        first_name: "Bob",
+        last_name: "Jones",
+        company: "Global Tech"
+    }
+];
+
 /**
  * Fetches all records from the master_uploads table, ordered by creation time.
  */
@@ -14,10 +37,20 @@ export const fetchMasterUploads = async () => {
 };
 
 /**
- * Fetches all records from a specific table.
- * @param {string} tableName 
+ * Fetches all records from a specific table by its ID.
+ * Example: if id is "123", it fetches from "leads_123".
+ * Legacy support: if id starts with "leads_", it uses it as is.
+ * IF ID IS "1", RETURNS MOCK DATA.
+ * @param {string} id 
  */
-export const fetchTableData = async (tableName) => {
+export const fetchTableData = async (id) => {
+    if (id === "1") {
+        return MOCK_LEADS;
+    }
+
+    // Determine the actual table name
+    const tableName = id.startsWith("leads_") ? id : `leads_${id}`;
+
     const { data, error } = await supabase
         .from(tableName)
         .select("*");
