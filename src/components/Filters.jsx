@@ -18,7 +18,7 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
   };
 
   return (
-    <HStack mb={6} spacing={3}>
+    <HStack spacing={3}>
       <InputGroup size="sm" maxW="12rem">
         <InputLeftElement pointerEvents="none">
           <Icon as={SearchIcon} />
@@ -40,11 +40,6 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
         columnFilters={columnFilters}
         setColumnFilters={setColumnFilters}
       />
-      {onToggleEdit && (
-        <Button onClick={onToggleEdit} colorScheme={isEditing ? "blue" : "gray"} size="sm">
-          {isEditing ? "Done Editing" : "Edit Mode"}
-        </Button>
-      )}
     </HStack>
 
   );

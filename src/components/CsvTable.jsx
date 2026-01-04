@@ -8,12 +8,14 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { fetchTableData, updateTableRow, batchUpdateTableRows } from "../services/api";
+import { fetchTableData, updateTableRow, batchUpdateTableRows, addTableRow, deleteTableRows } from "../services/api";
 import SortIcon from "./icons/SortIcon";
 import { Link } from "react-router-dom";
 import StatusCell from "./StatusCell";
 import EditableCell from "./EditableCell";
 import Filters from "./Filters";
+import AddRowModal from "./AddRowModal";
+import EditToolbar from "./EditToolbar";
 
 const dateFilterFn = (row, columnId, filterValue) => {
     const { start, end } = filterValue || {};
@@ -66,6 +68,36 @@ const CsvTable = ({ tableName }) => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [rowSelection, setRowSelection] = useState({});
+
+    // Always show checkbox column
+    const tableColumns = useMemo(() => {
+        return [
+            {
+                id: "select",
+                header: ({ table }) => (
+                    <Box display="flex" alignItems="center" gap={2}>
+                        <input
+                            type="checkbox"
+                            checked={table.getIsAllRowsSelected()}
+                            onChange={table.getToggleAllRowsSelectedHandler()}
+                        />
+                        <Text fontSize="sm">Select All</Text>
+                    </Box>
+                ),
+                cell: ({ row }) => (
+                    <input
+                        type="checkbox"
+                        checked={row.getIsSelected()}
+                        disabled={!row.getCanSelect()}
+                        onChange={row.getToggleSelectedHandler()}
+                    />
+                ),
+            },
+            ...columns
+        ];
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -134,8 +166,8 @@ const CsvTable = ({ tableName }) => {
                 try {
                     await batchUpdateTableRows(tableName, payload);
                     toast({
-                        title: "Rows updated successfully",
-                        description: `${changes.length} rows updated.`,
+                        title: "Updated successfully",
+                        description: `${changes.length} Row(s) updated.`,
                         status: "success",
                         duration: 3000,
                         isClosable: true,
@@ -143,7 +175,7 @@ const CsvTable = ({ tableName }) => {
                 } catch (err) {
                     console.error("Failed to batch update rows:", err);
                     toast({
-                        title: "Failed to update rows",
+                        title: "Failed to update row(s)",
                         description: err.message,
                         status: "error",
                         duration: 5000,
@@ -158,17 +190,81 @@ const CsvTable = ({ tableName }) => {
         setIsEditing(!isEditing);
     };
 
+    const handleAddRow = async (newData) => {
+        try {
+            await addTableRow(tableName, newData);
+            toast({
+                title: "Row added",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            // Refresh data
+            const tableData = await fetchTableData(tableName);
+            setData(tableData || []);
+            setOriginalData(JSON.parse(JSON.stringify(tableData || [])));
+        } catch (err) {
+            toast({
+                title: "Error adding row",
+                description: err.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
+
+    const handleDeleteRows = async () => {
+        const selectedRowIds = Object.keys(rowSelection).map(idx => data[idx].id);
+
+        if (selectedRowIds.length === 0) return;
+
+        if (!window.confirm(`Are you sure you want to delete ${selectedRowIds.length} rows?`)) {
+            return;
+        }
+
+        try {
+            const deletedRows = await deleteTableRows(tableName, selectedRowIds);
+            toast({
+                title: "Row(s) deleted",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            console.log("Deleted rows:", deletedRows);
+            // Refresh data
+            const tableData = await fetchTableData(tableName);
+            setData(tableData || []);
+            setOriginalData(JSON.parse(JSON.stringify(tableData || [])));
+            setRowSelection({});
+        } catch (err) {
+            toast({
+                title: "Error deleting rows",
+                description: err.message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
+
+
     const table = useReactTable({
         data: filteredData,
-        columns,
+        columns: tableColumns,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        enableRowSelection: true, // Enable row selection
+        onRowSelectionChange: setRowSelection, // Update state
         initialState: {
             pagination: {
                 pageSize: 25,
             },
+        },
+        state: {
+            rowSelection,
         },
         columnResizeMode: "onChange",
         meta: {
@@ -192,20 +288,32 @@ const CsvTable = ({ tableName }) => {
 
     return (
         <Box>
-            <Filters
-                columnFilters={table.getState().columnFilters}
-                setColumnFilters={table.setColumnFilters}
-                globalFilter={globalFilter}
-                setGlobalFilter={setGlobalFilter}
-                isEditing={isEditing}
-                onToggleEdit={handleToggleEdit}
-            />
+            <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
+                <Box display="flex" alignItems="center" gap={3}>
+                    <Filters
+                        columnFilters={table.getState().columnFilters}
+                        setColumnFilters={table.setColumnFilters}
+                        globalFilter={globalFilter}
+                        setGlobalFilter={setGlobalFilter}
+                    />
+                    <EditToolbar
+                        selectedCount={Object.keys(rowSelection).length}
+                        onDelete={handleDeleteRows}
+                        onAdd={() => setIsAddModalOpen(true)}
+                        onDeselectAll={() => setRowSelection({})}
+                    />
+                </Box>
+                <Button onClick={handleToggleEdit} colorScheme={isEditing ? "blue" : "gray"} size="sm">
+                    {isEditing ? "Done Editing" : "Edit Mode"}
+                </Button>
+            </Box>
+
             <Box className="table" w={table.getTotalSize()}>
                 {table.getHeaderGroups().map((headerGroup) => (
                     <Box className="tr" key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
                             <Box className="th" w={header.getSize()} key={header.id}>
-                                {header.column.columnDef.header}
+                                {flexRender(header.column.columnDef.header, header.getContext())}
                                 {header.column.getCanSort() && (
                                     <Icon
                                         as={SortIcon}
@@ -262,6 +370,11 @@ const CsvTable = ({ tableName }) => {
                     {">"}
                 </Button>
             </ButtonGroup>
+            <AddRowModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onAdd={handleAddRow}
+            />
         </Box>
     );
 };
