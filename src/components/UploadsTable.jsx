@@ -34,7 +34,7 @@ const UploadsTable = () => {
         },
         {
             accessorKey: "table_name",
-            header: "Table Name",
+            header: "Upload ID",
         },
         {
             accessorKey: "created_at",

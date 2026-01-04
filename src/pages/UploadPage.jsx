@@ -41,16 +41,16 @@ const UploadPage = () => {
                     setProgress(30);
 
                     // 1. Create Metadata Entry in Master Table
-                    const timestamp = new Date().getTime();
-                    const cleanFileName = file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-                    const uniqueTableName = `leads_${cleanFileName}_${timestamp}`; // e.g. leads_sample_csv_123456
+                    const uploadId = new Date().getTime().toString();
+                    const tableName = `leads_${uploadId}`;
 
-                    await createMasterEntry(file.name, uniqueTableName);
+                    // Store only the ID in the master table (as requested)
+                    await createMasterEntry(file.name, uploadId);
 
                     setProgress(50);
 
                     // 2. Create Table with Fixed Schema using RPC
-                    await createTableSchema(uniqueTableName);
+                    await createTableSchema(tableName);
 
                     setProgress(70);
 
@@ -75,12 +75,12 @@ const UploadPage = () => {
                     }).filter(row => row.date || row.lead_owner); // Filter out potentially empty parsing artifacts
 
                     // Insert in batches
-                    await insertTableData(uniqueTableName, formattedData);
+                    await insertTableData(tableName, formattedData);
 
                     setProgress(100);
                     toast({
                         title: "Upload Successful",
-                        description: `File uploaded and table '${uniqueTableName}' created with lead data.`,
+                        description: `File uploaded with ID: ${uploadId}`,
                         status: "success",
                         duration: 5000,
                         isClosable: true,
