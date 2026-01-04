@@ -1,18 +1,28 @@
-const STATUS_ON_HOLD = { id: 1, name: "On Hold", color: "blue.300" };
-const STATUS_IN_PROGRESS = {
-  id: 2,
-  name: "In Progress",
-  color: "yellow.400",
-};
+const STATUS_ON_HOLD = { id: 1, name: "On Hold", color: "blue.200" };
+const STATUS_IN_PROGRESS = { id: 2, name: "In Progress", color: "yellow.500", };
 const STATUS_RE_ENGAGEMENT = { id: 3, name: "Re-engagement", color: "pink.300" };
-const STATUS_PROPOSAL_SENT = { id: 4, name: "Proposal Sent", color: "green.300" };
-const STATUS_CLOSED = { id: 5, name: "Closed", color: "red.300" };
+const STATUS_PROPOSAL_SENT = { id: 4, name: "Proposal Sent", color: "blue.300" };
+const STATUS_CLOSED_LOST = { id: 5, name: "Closed Lost", color: "red.600" };
+const STATUS_CLOSED_WON = { id: 6, name: "Closed Won", color: "green.600" };
+const STATUS_CONTACTED = { id: 7, name: "Contacted", color: "blue.100" };
+const STATUS_DISQUALIFIED = { id: 8, name: "Disqualified", color: "red.600" };
+const STATUS_NEW_LEAD = { id: 9, name: "New Lead", color: "yellow.300" };
+const STATUS_NEGOTIATION = { id: 10, name: "Negotiation", color: "blue.600" };
+const STATUS_QUALIFIED = { id: 11, name: "Qualified", color: "green.200" };
+
+
 export const STATUSES = [
-  STATUS_ON_HOLD,
+  STATUS_NEW_LEAD,
   STATUS_IN_PROGRESS,
-  STATUS_RE_ENGAGEMENT,
+  STATUS_CONTACTED,
+  STATUS_ON_HOLD,
   STATUS_PROPOSAL_SENT,
-  STATUS_CLOSED,
+  STATUS_NEGOTIATION,
+  STATUS_QUALIFIED,
+  STATUS_CLOSED_WON,
+  STATUS_CLOSED_LOST,
+  STATUS_DISQUALIFIED,
+  STATUS_RE_ENGAGEMENT,
 ];
 
 const DATA = [
@@ -21,133 +31,18 @@ const DATA = [
     status: STATUS_ON_HOLD,
     due: new Date("2023/10/15"),
     notes: "This is a note",
-  },
-  {
-    task: "Write Integration Tests",
+  }, {
+    task: "Add a New Feature",
     status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Use Jest",
+    due: new Date("2023/10/15"),
+    notes: "This is a note",
   },
   {
-    task: "Add Instagram Integration",
+    task: "Add a New Feature",
     status: STATUS_RE_ENGAGEMENT,
-    due: null,
-    notes: "",
-  },
-  {
-    task: "Cleanup Database",
-    status: null,
-    due: new Date("2023/02/15"),
-    notes: "Remove old data",
-  },
-  {
-    task: "Refactor API Endpoints",
-    status: STATUS_PROPOSAL_SENT,
-    due: null,
-    notes: "",
-  },
-  {
-    task: "Add Documentation to API",
-    status: null,
-    due: new Date("2023/09/12"),
-    notes: "Add JS Docs to all endpoints",
-  },
-  {
-    task: "Update NPM Packages",
-    status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Upgrade React & Chakra UI",
-  },
-  {
-    task: "Optimize Database Queries",
-    status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Optimize slow queries.",
-  },
-  {
-    task: "Implement User Authentication",
-    status: STATUS_ON_HOLD,
-    due: new Date("2023/11/08"),
-    notes: "OAuth2 and JWT auth.",
-  },
-  {
-    task: "Design User Interface Mockups",
-    status: null,
-    due: new Date("2023/09/30"),
-    notes: "Create UI mockups.",
-  },
-  {
-    task: "Fix Cross-Browser Compatibility Issues",
-    status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Resolve browser issues.",
-  },
-  {
-    task: "Perform Security Audit",
-    status: null,
-    due: new Date("2023/10/22"),
-    notes: "Security audit.",
-  },
-  {
-    task: "Create User Onboarding Tutorial",
-    status: STATUS_ON_HOLD,
-    due: new Date("2023/11/15"),
-    notes: "User onboarding guide.",
-  },
-  {
-    task: "Optimize Frontend Performance",
-    status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Improve performance.",
-  },
-  {
-    task: "Conduct Code Review",
-    status: null,
-    due: new Date("2023/10/05"),
-    notes: "Code review meeting.",
-  },
-  {
-    task: "Implement Continuous Integration",
-    status: STATUS_ON_HOLD,
-    due: new Date("2023/11/01"),
-    notes: "Set up CI/CD pipelines.",
-  },
-  {
-    task: "Migrate to Cloud Hosting",
-    status: STATUS_CLOSED,
-    due: null,
-    notes: "Cloud migration.",
-  },
-  {
-    task: "Create User Feedback Survey",
-    status: null,
-    due: new Date("2023/09/25"),
-    notes: "User feedback survey.",
-  },
-  {
-    task: "Update User Documentation",
-    status: STATUS_RE_ENGAGEMENT,
-    due: null,
-    notes: "Revise documentation.",
-  },
-  {
-    task: "Bug Fixing and QA Testing",
-    status: null,
-    due: new Date("2023/10/10"),
-    notes: "Fix bugs and QA.",
-  },
-  {
-    task: "Implement Mobile App Support",
-    status: STATUS_IN_PROGRESS,
-    due: null,
-    notes: "Add mobile support.",
-  },
-  {
-    task: "Refine User Permission System",
-    status: null,
-    due: new Date("2023/09/18"),
-    notes: "Enhance permissions.",
-  },
+    due: new Date("2023/10/15"),
+    notes: "This is a note",
+  }
 ];
 
 export default DATA;

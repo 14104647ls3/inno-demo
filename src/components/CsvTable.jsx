@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Box, Button, ButtonGroup, Icon, Text, Spinner, Heading } from "@chakra-ui/react";
 import {
     flexRender,
@@ -13,12 +13,44 @@ import SortIcon from "./icons/SortIcon";
 import { Link } from "react-router-dom";
 import StatusCell from "./StatusCell";
 import EditableCell from "./EditableCell";
+import Filters from "./Filters";
+
+const dateFilterFn = (row, columnId, filterValue) => {
+    const { start, end } = filterValue || {};
+    if (!start && !end) return true;
+
+    const rowValue = row.getValue(columnId);
+    const rowDate = rowValue ? new Date(rowValue) : null;
+
+    // Normalize dates to midnight for comparison to avoid time issues
+    if (rowDate) rowDate.setHours(0, 0, 0, 0);
+
+    if (start) {
+        const startDate = new Date(start);
+        startDate.setHours(0, 0, 0, 0);
+        if (!rowDate || rowDate < startDate) return false;
+    }
+
+    if (end) {
+        const endDate = new Date(end);
+        endDate.setHours(0, 0, 0, 0);
+        if (!rowDate || rowDate > endDate) return false;
+    }
+
+    return true;
+};
+
+const multiSelectFilter = (row, columnId, filterValue) => {
+    if (!filterValue || filterValue.length === 0) return true;
+    const rowValue = row.getValue(columnId);
+    return filterValue.includes(rowValue);
+};
 
 const columns = [
-    { accessorKey: "date", header: "Date", cell: EditableCell },
+    { accessorKey: "date", header: "Date", cell: EditableCell, filterFn: dateFilterFn, enableGlobalFilter: false },
     { accessorKey: "lead_owner", header: "Lead Owner", cell: EditableCell },
     { accessorKey: "source", header: "Source", cell: EditableCell },
-    { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell },
+    { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell, enableGlobalFilter: false, filterFn: multiSelectFilter },
     { accessorKey: "account_id", header: "Account ID", cell: EditableCell },
     { accessorKey: "first_name", header: "First Name", cell: EditableCell },
     { accessorKey: "last_name", header: "Last Name", cell: EditableCell },
@@ -30,6 +62,7 @@ const CsvTable = ({ tableName }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [globalFilter, setGlobalFilter] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -49,8 +82,23 @@ const CsvTable = ({ tableName }) => {
         }
     }, [tableName]);
 
+    const filteredData = useMemo(() => {
+        return data.filter((row) => {
+            if (!globalFilter) return true;
+            const searchLower = globalFilter.toLowerCase();
+
+            return columns.some((column) => {
+                // Exclude date and deal_stage from global search
+                if (column.accessorKey === "date" || column.accessorKey === "deal_stage") return false;
+
+                const value = row[column.accessorKey];
+                return String(value || "").toLowerCase().includes(searchLower);
+            });
+        });
+    }, [data, globalFilter]);
+
     const table = useReactTable({
-        data,
+        data: filteredData,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -78,6 +126,12 @@ const CsvTable = ({ tableName }) => {
 
     return (
         <Box>
+            <Filters
+                columnFilters={table.getState().columnFilters}
+                setColumnFilters={table.setColumnFilters}
+                globalFilter={globalFilter}
+                setGlobalFilter={setGlobalFilter}
+            />
             <Box mb={4} display="flex" justifyContent="flex-end">
                 <Button onClick={() => setIsEditing(!isEditing)} colorScheme={isEditing ? "blue" : "gray"}>
                     {isEditing ? "Done Editing" : "Edit Mode"}
