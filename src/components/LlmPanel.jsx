@@ -1,32 +1,45 @@
 import React, { useState } from 'react';
-import { Box, Heading, Input, Text, HStack, Flex, IconButton, Icon } from "@chakra-ui/react";
-import { ArrowUpIcon } from "@chakra-ui/icons";
-import { FaRobot, FaUser } from "react-icons/fa"; // You might need to install react-icons if not present, but using default icons if fails
+import { Box, Heading, Input, Text, HStack, Flex, IconButton, Icon, Image, Spinner } from "@chakra-ui/react";
 
-const LlmPanel = () => {
+import { ArrowUpIcon } from "@chakra-ui/icons";
+import { FaRobot, FaUser } from "react-icons/fa";
+import { analyzeData } from "../services/api";
+
+const LlmPanel = ({ table_id }) => {
     const [messages, setMessages] = useState([
         { role: 'assistant', content: 'Hello! I am your AI assistant. How can I help you with this data?' }
     ]);
     const [inputValue, setInputValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const tableName = "leads_" + table_id;
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
 
-        const newMessages = [
-            ...messages,
-            { role: 'user', content: inputValue }
-        ];
+        const userMsg = { role: 'user', content: inputValue };
+        setMessages(prev => [...prev, userMsg]);
+        setInputValue('');
+        setIsLoading(true);
 
-        // Simulate a simple response for now since we don't have a backend LLM yet
-        setTimeout(() => {
+        try {
+            const data = await analyzeData(inputValue, tableName);
             setMessages(prev => [
                 ...prev,
-                { role: 'assistant', content: "I'm a placeholder AI. I received your message: " + inputValue }
+                {
+                    role: 'assistant',
+                    content: data.summary,
+                    image: data.graph_base64 ? `data:image/png;base64,${data.graph_base64}` : null
+                }
             ]);
-        }, 1000);
-
-        setMessages(newMessages);
-        setInputValue('');
+        } catch (error) {
+            console.error("LLM Error:", error);
+            setMessages(prev => [
+                ...prev,
+                { role: 'assistant', content: "Sorry, I encountered an error communicating with the AI server." }
+            ]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleKeyDown = (e) => {
@@ -83,9 +96,22 @@ const LlmPanel = () => {
                             boxShadow="md"
                         >
                             <Text>{msg.content}</Text>
+                            {msg.image && (
+                                <Image src={msg.image} alt="Analysis Graph" mt={3} borderRadius="md" boxShadow="sm" />
+                            )}
                         </Box>
                     </Flex>
                 ))}
+                {isLoading && (
+                    <Flex alignSelf="flex-start" maxW="85%" align="center" gap={2}>
+                        <Box minW="24px" minH="24px" w="24px" h="24px" borderRadius="full" bg="teal.500" display="flex" alignItems="center" justifyContent="center">
+                            <FaRobot color="white" size="12px" />
+                        </Box>
+                        <Box bg="gray.700" px={4} py={3} borderRadius="2xl" borderBottomLeftRadius="sm">
+                            <Spinner size="sm" color="white" />
+                        </Box>
+                    </Flex>
+                )}
             </Box>
 
             {/* Input Area */}

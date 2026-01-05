@@ -17,7 +17,7 @@ const ViewPage = () => {
 
             {/* AI Side Panel (20%, min-width constraint) */}
             <Box w="20%" minW="300px" bg="white">
-                <LlmPanel />
+                <LlmPanel table_id={id} />
             </Box>
         </Flex>
     );

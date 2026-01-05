@@ -179,3 +179,29 @@ export const deleteTableRows = async (tableName, rowIds) => {
 
     return rowIds;
 };
+
+/**
+ * Sends a prompt to the AI server for analysis.
+ * @param {string} prompt 
+ * @param {string} tableName
+ * @param {boolean} includeGraph
+ */
+export const analyzeData = async (prompt, tableName, includeGraph, includeTable = false) => {
+    const response = await fetch('http://localhost:8000/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            question: prompt,
+            table_name: tableName,
+            include_graph: includeGraph
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`AI Server Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+};
