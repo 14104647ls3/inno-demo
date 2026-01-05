@@ -187,3 +187,45 @@ class ClaudeService:
             content = content.split("```json")[1].split("```")[0].strip()
         
         return json.loads(content)
+
+    async def classify_intent(self, question: str) -> Dict[str, Any]:
+        """
+        Determine if the user's question requires analysis (SQL/Queries) or is just a normal chat.
+        Returns: {"classification": "analyze" | "chat", "response": str (if chat)}
+        """
+        
+        response = self.client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=300,
+            system="""You are an intelligent assistant for a lead generation analytics system. 
+            Your job is to distinguish between data analysis requests and normal conversation.
+
+            Rules:
+            1. "analyze": If the user asks for data from the database, leads, statistics, counts, lists, checking records, filtered data, or anything related to the lead tables. Examples: "How many leads?", "Show me leads from Google", "Who is the top owner?", "List all deals".
+            2. "chat": If the user is just greeting ("hello", "hi"), asking general questions not about the data ("how are you", "what can you do"), or asking something unrelated to the database.
+
+            Response format for "analyze":
+            {
+                "classification": "analyze",
+                "response": null
+            }
+
+            Response format for "chat":
+            {
+                "classification": "chat",
+                "response": "[A polite response to the user's chat, followed by a sentence guiding them to ask specific data analysis questions]"
+            }
+            example for chat: 
+            "Hello! I'm doing great. I'm here to help you analyze your lead data. You can ask me questions like 'How many qualified leads do we have?' or 'Show me the trend of leads over the last month'."
+            """,
+            messages=[{
+                "role": "user",
+                "content": f"""Question: "{question}"\n\nReturn JSON classification."""
+            }]
+        )
+        
+        content = response.content[0].text
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0].strip()
+        
+        return json.loads(content)
