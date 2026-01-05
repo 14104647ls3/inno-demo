@@ -184,10 +184,10 @@ export const deleteTableRows = async (tableName, rowIds) => {
  * Sends a prompt to the AI server for analysis.
  * @param {string} prompt 
  * @param {string} tableName
- * @param {boolean} includeGraph
  */
-export const analyzeData = async (prompt, tableName, includeGraph, includeTable = false) => {
-    const response = await fetch('http://localhost:8000/analyze', {
+export const analyzeData = async (prompt, tableName, includeGraph) => {
+    const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+    const response = await fetch(AI_SERVER_URL + '/api/analyze', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

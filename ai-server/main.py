@@ -65,9 +65,15 @@ class AnalysisResponse(BaseModel):
 
 
 @app.post("/analyze", response_model=AnalysisResponse)
+@app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze_leads(request: AnalysisRequest, raw_request: Request):
     """Main analytics endpoint - returns graph as url"""
     try:
+        # Step 0: Verify the request the conversation is worth doing, or is it just a greeting?
+        
+
+
+
         # Step 1: Validate table exists
         available_tables = query_service.get_available_tables()
         if request.table_name not in available_tables:
@@ -79,7 +85,7 @@ async def analyze_leads(request: AnalysisRequest, raw_request: Request):
         print("Table exists")
         # Step 1.5: Auto-detect if graph should be generated (if not explicitly set)
         # should_include_graph = request.include_graph
-        # graph_type_to_use = request.graph_type
+        graph_type_to_use = request.graph_type
         # print("Graph auto-detect: ", request.include_graph)
         # print("Graph type: ", request.graph_type)
 

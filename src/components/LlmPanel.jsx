@@ -28,7 +28,7 @@ const LlmPanel = ({ table_id }) => {
                 {
                     role: 'assistant',
                     content: data.summary,
-                    image: data.graph_base64 ? `data:image/png;base64,${data.graph_base64}` : null
+                    graph_url: data.graph_url ? data.graph_url : null
                 }
             ]);
         } catch (error) {
@@ -96,8 +96,8 @@ const LlmPanel = ({ table_id }) => {
                             boxShadow="md"
                         >
                             <Text>{msg.content}</Text>
-                            {msg.image && (
-                                <Image src={msg.image} alt="Analysis Graph" mt={3} borderRadius="md" boxShadow="sm" />
+                            {msg.graph_url && (
+                                <Image src={msg.graph_url} alt="Analysis Graph" mt={3} borderRadius="md" boxShadow="sm" />
                             )}
                         </Box>
                     </Flex>
