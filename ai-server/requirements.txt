@@ -1,0 +1,10 @@
+fastapi[standard]
+uvicorn
+anthropic
+supabase
+python-dotenv
+pydantic
+matplotlib
+plotly
+kaleido
+Pillow
