@@ -35,7 +35,7 @@ const LlmPanel = ({ table_id }) => {
             console.error("LLM Error:", error);
             setMessages(prev => [
                 ...prev,
-                { role: 'assistant', content: "Sorry, I encountered an error communicating with the AI server." }
+                { role: 'assistant', content: "Oops! My digital brain just tripped over a power cord. Can we try that again?" }
             ]);
         } finally {
             setIsLoading(false);

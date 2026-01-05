@@ -6,7 +6,7 @@ const CsvViewer = ({ tableName }) => {
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={10}>
-                <Heading>Viewing: {tableName}</Heading>
+                {/* <Heading>Viewing: {tableName}</Heading> */}
                 <Button as={Link} to="/upload" colorScheme="teal" variant="outline">
                     Back to Uploads
                 </Button>
