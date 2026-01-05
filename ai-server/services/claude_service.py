@@ -55,7 +55,7 @@ class ClaudeService:
         self, 
         query_results: List[Dict], 
         graph_type: str = "auto",
-        include_graph: bool = False  # NEW parameter
+        include_graph: bool = False
     ) -> Dict[str, Any]:
         """Generate statistics and optionally graph data from query results"""
         
@@ -64,42 +64,54 @@ class ClaudeService:
             prompt_content = f"""Query results: {json.dumps(query_results, indent=2)}
 
             Generate:
-            1. Specific numeric statistics
-            2. Graph data for {graph_type} chart (Chart.js format)
+            1. A natural language summary presenting the key insights (2-3 sentences)
+            2. Specific numeric statistics
+            3. Graph data for {graph_type} chart
+
+            IMPORTANT: Write the summary as if you're a data analyst presenting findings to a colleague.
+            Use actual numbers and be specific. Sound natural and conversational.
 
             Return JSON:
             {{
-    "statistics": [
-        {{
-        "metric_name": "Total Leads",
-        "value": 1234,
-        "unit": "leads",
-        "breakdown": {{"source_a": 500}}
-        }}
-    ],
-    "graph_data": {{
-        "type": "bar",
-        "labels": ["Label1"],
-        "datasets": [{{
-        "label": "Dataset",
-        "data": [100]
-        }}]
-    }}
-    }}"""
+            "summary": "Based on the data, you have 1,010 qualified deals in your pipeline. This represents a strong conversion funnel with qualified leads making up about 18.6% of your total leads. The majority of your leads are currently in the qualification stage.",
+            "statistics": [
+                {{
+                "metric_name": "Qualified Deals",
+                "value": 1010,
+                "unit": "leads",
+                "breakdown": {{"qualified": 1010}}
+                }}
+            ],
+            "graph_data": {{
+                "type": "bar",
+                "labels": ["Qualified"],
+                "datasets": [{{
+                "label": "Deal Count",
+                "data": [1010]
+                }}]
+            }}
+            }}"""                
+            
         else:
             # Simpler prompt when no graph needed
             prompt_content = f"""Query results: {json.dumps(query_results, indent=2)}
 
-            Generate specific numeric statistics ONLY (no graph data needed).
+            Generate:
+            1. A natural language summary presenting the key insights (2-3 sentences)
+            2. Specific numeric statistics
+
+            IMPORTANT: Write the summary as if you're a data analyst presenting findings to a colleague.
+            Use actual numbers and be specific. Sound natural and conversational.
 
             Return JSON:
             {{
+            "summary": "Based on the data, you have 1,010 qualified deals in your pipeline. This represents a strong conversion funnel with qualified leads making up about 18.6% of your total leads.",
             "statistics": [
                 {{
-                "metric_name": "Total Leads",
-                "value": 1234,
+                "metric_name": "Qualified Deals",
+                "value": 1010,
                 "unit": "leads",
-                "breakdown": {{"source_a": 500}}
+                "breakdown": {{"qualified": 1010}}
                 }}
             ]
             }}"""

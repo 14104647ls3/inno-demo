@@ -57,10 +57,11 @@ class StatisticResult(BaseModel):
 
 
 class AnalysisResponse(BaseModel):
+    summary: str  # NEW: Human-readable summary
     statistics: List[StatisticResult]
     graph_base64: str | None = None
     sql_queries: List[str]
-    graph_type: str | None = None   
+    graph_type: str | None = None
 
 
 @app.post("/analyze", response_model=AnalysisResponse)
@@ -120,6 +121,7 @@ async def analyze_leads(request: AnalysisRequest):
             actual_graph_type = request.graph_type
         
         return AnalysisResponse(
+            summary=analysis['summary'],
             statistics=analysis['statistics'],
             graph_base64=graph_base64,  # Will be None if not requested
             sql_queries=[q['sql'] for q in queries],
