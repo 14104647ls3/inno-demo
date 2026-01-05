@@ -1,4 +1,4 @@
-import { Box, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { Box, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { STATUSES } from "../data";
 
 export const ColorIcon = ({ color, ...props }) => (
@@ -6,28 +6,43 @@ export const ColorIcon = ({ color, ...props }) => (
 );
 
 const StatusCell = ({ getValue, row, column, table }) => {
-  const { name, color } = getValue() || {};
-  const { updateData } = table.options.meta;
+  const cellValue = getValue();
+  const statusObj = STATUSES.find(s => s.name === cellValue) || { name: cellValue, color: "gray.500" };
+  const { updateData, isEditing } = table.options.meta || {};
+
+  if (!isEditing) {
+    return (
+      <Box display="flex" alignItems="center">
+        <ColorIcon color={statusObj.color} mr={2} />
+        <Text fontSize="xs">{statusObj.name}</Text>
+      </Box>
+    );
+  }
+
   return (
     <Menu isLazy offset={[0, 0]} flip={false} autoSelect={false}>
       <MenuButton
         h="100%"
         w="100%"
         textAlign="left"
-        p={1.5}
-        bg={color || "transparent"}
-        color="gray.900"
+        size="sm"
+        p={1}
+        borderRadius="md"
+        _hover={{ bg: "gray.700" }}
       >
-        {name}
+        <Box display="flex" alignItems="center">
+          <ColorIcon color={statusObj.color} mr={2} />
+          <Text fontSize="xs">{statusObj.name}</Text>
+        </Box>
       </MenuButton>
-      <MenuList>
-        <MenuItem onClick={() => updateData(row.index, column.id, null)}>
-          <ColorIcon color="red.400" mr={3} />
+      <MenuList zIndex={20}>
+        <MenuItem onClick={() => updateData(row.index, column.id, "")}>
+          <ColorIcon color="gray.400" mr={3} />
           None
         </MenuItem>
         {STATUSES.map((status) => (
           <MenuItem
-            onClick={() => updateData(row.index, column.id, status)}
+            onClick={() => updateData(row.index, column.id, status.name)}
             key={status.id}
           >
             <ColorIcon color={status.color} mr={3} />

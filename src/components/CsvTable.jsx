@@ -9,8 +9,10 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { fetchTableData, updateTableRow, batchUpdateTableRows, addTableRow, deleteTableRows } from "../services/api";
-import SortIcon from "./icons/SortIcon";
+import { SortIcon, SortIconAsc, SortIconDesc } from "./icons/SortIcon";
 import { Link } from "react-router-dom";
+
+import "./CsvTable.css";
 import StatusCell from "./StatusCell";
 import EditableCell from "./EditableCell";
 import Filters from "./Filters";
@@ -54,7 +56,7 @@ const columns = [
     { accessorKey: "date", header: "Date", cell: DateCell, filterFn: dateFilterFn, enableGlobalFilter: false },
     { accessorKey: "lead_owner", header: "Lead Owner", cell: EditableCell },
     { accessorKey: "source", header: "Source", cell: EditableCell },
-    { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell, filterFn: multiSelectFilter }, // Removed enableGlobalFilter: false
+    { accessorKey: "deal_stage", header: "Deal Stage", cell: StatusCell, filterFn: multiSelectFilter }, // Removed enableGlobalFilter: false
     { accessorKey: "account_id", header: "Account ID", cell: EditableCell },
     { accessorKey: "first_name", header: "First Name", cell: EditableCell },
     { accessorKey: "last_name", header: "Last Name", cell: EditableCell },
@@ -135,6 +137,13 @@ const CsvTable = ({ tableName }) => {
             });
         });
     }, [data, globalFilter]);
+
+    const handleCancelEdit = () => {
+        if (window.confirm("Are you sure you want to revert all changes done in editing mode?")) {
+            setData(JSON.parse(JSON.stringify(originalData)));
+            setIsEditing(false);
+        }
+    };
 
     const handleToggleEdit = async () => {
         if (isEditing) {
@@ -307,9 +316,16 @@ const CsvTable = ({ tableName }) => {
                         onDeselectAll={() => setRowSelection({})}
                     />
                 </Box>
-                <Button onClick={handleToggleEdit} colorScheme={isEditing ? "blue" : "gray"} size="sm">
-                    {isEditing ? "Done Editing" : "Edit Mode"}
-                </Button>
+                <Box display="flex" gap={2}>
+                    {isEditing && (
+                        <Button onClick={handleCancelEdit} colorScheme="red" size="sm">
+                            Cancel
+                        </Button>
+                    )}
+                    <Button onClick={handleToggleEdit} colorScheme={isEditing ? "green" : "blue"} size="sm">
+                        {isEditing ? "Save" : "Edit Mode"}
+                    </Button>
+                </Box>
             </Box>
 
             <Box className="table" w={table.getTotalSize()}>
@@ -320,18 +336,18 @@ const CsvTable = ({ tableName }) => {
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                                 {header.column.getCanSort() && (
                                     <Icon
-                                        as={SortIcon}
+                                        as={
+                                            {
+                                                asc: SortIconAsc,
+                                                desc: SortIconDesc,
+                                            }[header.column.getIsSorted()] ?? SortIcon
+                                        }
                                         mx={3}
                                         fontSize={14}
                                         onClick={header.column.getToggleSortingHandler()}
+                                        cursor="pointer"
                                     />
                                 )}
-                                {
-                                    {
-                                        asc: " 🔼",
-                                        desc: " 🔽",
-                                    }[header.column.getIsSorted()]
-                                }
                                 <Box
                                     onMouseDown={header.getResizeHandler()}
                                     onTouchStart={header.getResizeHandler()}
