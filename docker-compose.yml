@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - ai-server
+
+  ai-server:
+    build:
+      context: ./ai-server
+    ports:
+      - "8000:8000"
