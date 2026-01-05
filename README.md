@@ -53,7 +53,6 @@ Frontend is a Vite+React app and AI server is a FastAPI app, located in `ai-serv
     ANTHROPIC_API_KEY=your anthropic API Key
     SUPABASE_URL=your supabase Project URL
     SUPABASE_KEY=your supabase Publishable API Key
-    FRONTEND_URL=http://localhost:5173
     ```
 
 ### Database Setup
@@ -99,7 +98,7 @@ pip install -r requirements.txt
 fastapi dev main.py
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser for frontend.
+Open [http://localhost:5173](http://localhost:5173) in your browser for frontend in development, [http://localhost:80](http://localhost:80) for production.
 [http://localhost:8000](http://localhost:8000) for ai-server, you can use postman to test the API.
 
 ## Database Structure
