@@ -131,3 +131,59 @@ class ClaudeService:
             content = content.split("```json")[1].split("```")[0].strip()
         
         return json.loads(content)
+
+
+    async def should_generate_graph(self, question: str) -> Dict[str, Any]:
+        """
+        Analyze the question to determine if a graph would be helpful
+        Returns: {"include_graph": bool, "graph_type": str, "reasoning": str}
+        """
+        
+        response = self.client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=300,
+            system="""You are an expert at understanding data visualization needs.
+            
+            Analyze questions to determine if a graph/chart would be helpful.
+
+            Rules:
+            - Generate graph if: question asks to "show", "visualize", "compare", "trend", "over time", "breakdown", "distribution"
+            - Generate graph if: comparing multiple categories, showing trends, or analyzing proportions
+            - DON'T generate graph if: asking for single number, count, or simple yes/no
+            - DON'T generate graph if: asking for list of items, specific records, or detailed breakdowns with many categories
+
+            Choose appropriate graph type:
+            - "bar": comparing categories, showing distribution
+            - "line": trends over time, growth patterns
+            - "pie": proportions, percentage breakdown (max 5-7 categories)
+            - "scatter": correlation between two variables
+            - "none": no graph needed""",
+            messages=[{
+                "role": "user",
+                "content": f"""Question: "{question}"
+
+            Should we generate a graph for this question?
+
+            Return JSON:
+            {{
+            "include_graph": true,
+            "graph_type": "bar",
+            "reasoning": "User asked to 'show' leads by source, which is perfect for a bar chart comparison"
+            }}
+    
+            Or:
+
+            {{
+            "include_graph": false,
+            "graph_type": "none",
+            "reasoning": "User just wants a single count number"
+            }}"""
+            }
+        ]
+        )
+        
+        content = response.content[0].text
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0].strip()
+        
+        return json.loads(content)

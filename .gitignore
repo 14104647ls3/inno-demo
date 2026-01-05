@@ -26,3 +26,4 @@ dist-ssr
 ai-server/.env
 *.pyc
 .env
+ai-server/static/images/*

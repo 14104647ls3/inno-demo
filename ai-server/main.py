@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Literal
@@ -29,6 +30,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Initialize services
 claude_service = ClaudeService(os.getenv("ANTHROPIC_API_KEY"))
 query_service = QueryService(
@@ -57,16 +61,16 @@ class StatisticResult(BaseModel):
 
 
 class AnalysisResponse(BaseModel):
-    summary: str  # NEW: Human-readable summary
+    summary: str
     statistics: List[StatisticResult]
-    graph_base64: str | None = None
+    graph_url: str | None = None
     sql_queries: List[str]
     graph_type: str | None = None
 
 
 @app.post("/analyze", response_model=AnalysisResponse)
-async def analyze_leads(request: AnalysisRequest):
-    """Main analytics endpoint - returns graph as base64"""
+async def analyze_leads(request: AnalysisRequest, raw_request: Request):
+    """Main analytics endpoint - returns graph as url"""
     try:
         # Step 1: Validate table exists
         available_tables = query_service.get_available_tables()
@@ -76,7 +80,23 @@ async def analyze_leads(request: AnalysisRequest):
                 detail=f"Table {request.table_name} not found"
             )
         
-        # Step 2: Generate SQL queries using Claude
+        print("Table exists")
+        # Step 1.5: Auto-detect if graph should be generated (if not explicitly set)
+        # should_include_graph = request.include_graph
+        # graph_type_to_use = request.graph_type
+        # print("Graph auto-detect: ", request.include_graph)
+        # print("Graph type: ", request.graph_type)
+
+        # if request.include_graph is None:  # Auto-detect mode
+        graph_decision = await claude_service.should_generate_graph(request.question)
+        should_include_graph = graph_decision['include_graph']
+        if graph_decision['graph_type'] != 'none':
+            graph_type_to_use = graph_decision['graph_type']
+
+        print("Graph auto-decision: ", graph_decision['include_graph'], graph_decision['graph_type'])
+        print("Reasoning: ", graph_decision['reasoning'])
+
+        # Step 2: Generate SQL queries
         queries = await claude_service.generate_queries(
             question=request.question,
             table_name=request.table_name
@@ -102,30 +122,28 @@ async def analyze_leads(request: AnalysisRequest):
         # Step 5: Generate statistics (always) and graph data (conditional)
         analysis = await claude_service.generate_analysis(
             query_results=query_results,
-            graph_type=request.graph_type,
-            include_graph=request.include_graph
+            graph_type=graph_type_to_use,
+            include_graph=should_include_graph
         )
         
-        # Step 6: Generate base64 image ONLY if requested
-        graph_base64 = None
-        actual_graph_type = None
-        
-        if request.include_graph and 'graph_data' in analysis:
-            graph_base64 = graph_service.generate_graph_base64(
+        # Step 6: Generate graph file ONLY if requested
+        graph_url = None
+        if should_include_graph and graph_type_to_use != 'none':
+            filename = graph_service.generate_graph_file(
                 graph_data=analysis['graph_data'],
-                graph_type=request.graph_type,
+                graph_type=graph_type_to_use,
                 engine=request.graph_engine,
                 width=request.image_width,
                 height=request.image_height
             )
-            actual_graph_type = request.graph_type
+            graph_url = f"{str(raw_request.base_url)}static/images/{filename}"
         
         return AnalysisResponse(
             summary=analysis['summary'],
             statistics=analysis['statistics'],
-            graph_base64=graph_base64,  # Will be None if not requested
+            graph_url=graph_url,  # Will be None if not requested
             sql_queries=[q['sql'] for q in queries],
-            graph_type=actual_graph_type  # Will be None if not requested
+            graph_type=graph_type_to_use  # Will be None if not requested
         )
         
     except HTTPException:
