@@ -270,6 +270,7 @@ const CsvTable = ({ tableName }) => {
         getSortedRowModel: getSortedRowModel(),
         getRowId: (row) => row.id, // Use row.id as the unique identifier
         enableRowSelection: true, // Enable row selection
+        enableMultiSort: true, // Enable multi-column sorting explicitly
         onRowSelectionChange: setRowSelection, // Update state
         initialState: {
             pagination: {
@@ -335,18 +336,32 @@ const CsvTable = ({ tableName }) => {
                             <Box className="th" w={header.getSize()} key={header.id}>
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                                 {header.column.getCanSort() && (
-                                    <Icon
-                                        as={
-                                            {
-                                                asc: SortIconAsc,
-                                                desc: SortIconDesc,
-                                            }[header.column.getIsSorted()] ?? SortIcon
-                                        }
-                                        mx={3}
-                                        fontSize={14}
-                                        onClick={header.column.getToggleSortingHandler()}
-                                        cursor="pointer"
-                                    />
+                                    <Box as="span" display="flex" alignItems="center">
+                                        <Icon
+                                            as={
+                                                {
+                                                    asc: SortIconAsc,
+                                                    desc: SortIconDesc,
+                                                }[header.column.getIsSorted()] ?? SortIcon
+                                            }
+                                            mx={2}
+                                            fontSize={14}
+                                            onClick={(e) => header.column.toggleSorting(undefined, e.ctrlKey)}
+                                            cursor="pointer"
+                                            title="Ctrl+Click to sort multiple columns"
+                                        />
+                                        {header.column.getIsSorted() && table.getState().sorting.length > 1 && (
+                                            <Text
+                                                as="span"
+                                                fontSize="xs"
+                                                color="gray.500"
+                                                ml={-1}
+                                                mr={2}
+                                            >
+                                                {header.column.getSortIndex() + 1}
+                                            </Text>
+                                        )}
+                                    </Box>
                                 )}
                                 <Box
                                     onMouseDown={header.getResizeHandler()}
