@@ -64,15 +64,33 @@ class AnalysisResponse(BaseModel):
     graph_type: str | None = None
 
 
+
+
 @app.post("/analyze", response_model=AnalysisResponse)
 @app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze_leads(request: AnalysisRequest, raw_request: Request):
     """Main analytics endpoint - returns graph as url"""
     try:
         # Step 0: Verify the request the conversation is worth doing, or is it just a greeting?
+        if request.question.strip().lower() == "ping":
+            return AnalysisResponse(
+                summary="Pong",
+                statistics=[],
+                sql_queries=[],
+                graph_url=None
+            )
+
+        # Check intent - skip analysis if just chat
+        intent = await claude_service.classify_intent(request.question)
+        print(f"Intent classified as: {intent['classification']}")
         
-
-
+        if intent['classification'] == 'chat':
+            return AnalysisResponse(
+                summary=intent['response'],
+                statistics=[],
+                sql_queries=[],
+                graph_url=None
+            )
 
         # Step 1: Validate table exists
         available_tables = query_service.get_available_tables()

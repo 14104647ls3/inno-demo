@@ -39,10 +39,10 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
 
     const handleSubmit = () => {
         // Validate required fields
-        if (!formData.date || !formData.deal_stage) {
+        if (!formData.date || !formData.lead_owner || !formData.source || !formData.deal_stage || !formData.account_id || !formData.first_name) {
             toast({
                 title: "Error",
-                description: "Date and Deal Stage are required.",
+                description: "Please fill all required fields.",
                 status: "error",
                 duration: 3000,
                 isClosable: true,
@@ -98,7 +98,7 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
                             />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Lead Owner</FormLabel>
                             <Input
                                 name="lead_owner"
@@ -107,7 +107,7 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
                             />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Source</FormLabel>
                             <Input
                                 name="source"
@@ -132,7 +132,7 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
                             </Select>
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Account ID</FormLabel>
                             <Input
                                 name="account_id"
@@ -141,7 +141,7 @@ const AddRowModal = ({ isOpen, onClose, onAdd }) => {
                             />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>First Name</FormLabel>
                             <Input
                                 name="first_name"

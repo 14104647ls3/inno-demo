@@ -9,8 +9,10 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { fetchTableData, updateTableRow, batchUpdateTableRows, addTableRow, deleteTableRows } from "../services/api";
-import SortIcon from "./icons/SortIcon";
+import { SortIcon, SortIconAsc, SortIconDesc } from "./icons/SortIcon";
 import { Link } from "react-router-dom";
+
+import "./CsvTable.css";
 import StatusCell from "./StatusCell";
 import EditableCell from "./EditableCell";
 import Filters from "./Filters";
@@ -54,7 +56,7 @@ const columns = [
     { accessorKey: "date", header: "Date", cell: DateCell, filterFn: dateFilterFn, enableGlobalFilter: false },
     { accessorKey: "lead_owner", header: "Lead Owner", cell: EditableCell },
     { accessorKey: "source", header: "Source", cell: EditableCell },
-    { accessorKey: "deal_stage", header: "Deal Stage", cell: EditableCell, filterFn: multiSelectFilter }, // Removed enableGlobalFilter: false
+    { accessorKey: "deal_stage", header: "Deal Stage", cell: StatusCell, filterFn: multiSelectFilter }, // Removed enableGlobalFilter: false
     { accessorKey: "account_id", header: "Account ID", cell: EditableCell },
     { accessorKey: "first_name", header: "First Name", cell: EditableCell },
     { accessorKey: "last_name", header: "Last Name", cell: EditableCell },
@@ -122,19 +124,44 @@ const CsvTable = ({ tableName }) => {
     }, [tableName]);
 
     const filteredData = useMemo(() => {
+        if (!globalFilter) return data;
+
+        const terms = globalFilter.split(",").map(term => term.trim()).filter(term => term);
+        if (terms.length === 0) return data;
+
         return data.filter((row) => {
-            if (!globalFilter) return true;
-            const searchLower = globalFilter.toLowerCase();
+            return terms.some(term => {
+                const colonIndex = term.indexOf(":");
+                if (colonIndex !== -1) {
+                    const colName = term.substring(0, colonIndex).trim();
+                    const filterVal = term.substring(colonIndex + 1).trim().toLowerCase();
 
-            return columns.some((column) => {
-                // Exclude date from global search
-                if (column.accessorKey === "date") return false;
+                    const column = columns.find(c => c.accessorKey === colName);
+                    if (column) {
+                        const value = row[column.accessorKey];
+                        return String(value || "").toLowerCase().includes(filterVal);
+                    }
+                    return false;
+                }
 
-                const value = row[column.accessorKey];
-                return String(value || "").toLowerCase().includes(searchLower);
+                const searchLower = term.toLowerCase();
+                return columns.some((column) => {
+                    // Exclude date & deal_stage from global search
+                    if (column.accessorKey === "date" || column.accessorKey === "deal_stage") return false;
+
+                    const value = row[column.accessorKey];
+                    return String(value || "").toLowerCase().includes(searchLower);
+                });
             });
         });
     }, [data, globalFilter]);
+
+    const handleCancelEdit = () => {
+        if (window.confirm("Are you sure you want to revert all changes done in editing mode?")) {
+            setData(JSON.parse(JSON.stringify(originalData)));
+            setIsEditing(false);
+        }
+    };
 
     const handleToggleEdit = async () => {
         if (isEditing) {
@@ -261,6 +288,7 @@ const CsvTable = ({ tableName }) => {
         getSortedRowModel: getSortedRowModel(),
         getRowId: (row) => row.id, // Use row.id as the unique identifier
         enableRowSelection: true, // Enable row selection
+        enableMultiSort: true, // Enable multi-column sorting explicitly
         onRowSelectionChange: setRowSelection, // Update state
         initialState: {
             pagination: {
@@ -307,9 +335,16 @@ const CsvTable = ({ tableName }) => {
                         onDeselectAll={() => setRowSelection({})}
                     />
                 </Box>
-                <Button onClick={handleToggleEdit} colorScheme={isEditing ? "blue" : "gray"} size="sm">
-                    {isEditing ? "Done Editing" : "Edit Mode"}
-                </Button>
+                <Box display="flex" gap={2}>
+                    {isEditing && (
+                        <Button onClick={handleCancelEdit} colorScheme="red" size="sm">
+                            Cancel
+                        </Button>
+                    )}
+                    <Button onClick={handleToggleEdit} colorScheme={isEditing ? "green" : "blue"} size="sm">
+                        {isEditing ? "Save" : "Edit Mode"}
+                    </Button>
+                </Box>
             </Box>
 
             <Box className="table" w={table.getTotalSize()}>
@@ -319,19 +354,33 @@ const CsvTable = ({ tableName }) => {
                             <Box className="th" w={header.getSize()} key={header.id}>
                                 {flexRender(header.column.columnDef.header, header.getContext())}
                                 {header.column.getCanSort() && (
-                                    <Icon
-                                        as={SortIcon}
-                                        mx={3}
-                                        fontSize={14}
-                                        onClick={header.column.getToggleSortingHandler()}
-                                    />
+                                    <Box as="span" display="flex" alignItems="center">
+                                        <Icon
+                                            as={
+                                                {
+                                                    asc: SortIconAsc,
+                                                    desc: SortIconDesc,
+                                                }[header.column.getIsSorted()] ?? SortIcon
+                                            }
+                                            mx={2}
+                                            fontSize={14}
+                                            onClick={(e) => header.column.toggleSorting(undefined, e.ctrlKey)}
+                                            cursor="pointer"
+                                            title="Ctrl+Click to sort multiple columns"
+                                        />
+                                        {header.column.getIsSorted() && table.getState().sorting.length > 1 && (
+                                            <Text
+                                                as="span"
+                                                fontSize="xs"
+                                                color="gray.500"
+                                                ml={-1}
+                                                mr={2}
+                                            >
+                                                {header.column.getSortIndex() + 1}
+                                            </Text>
+                                        )}
+                                    </Box>
                                 )}
-                                {
-                                    {
-                                        asc: " 🔼",
-                                        desc: " 🔽",
-                                    }[header.column.getIsSorted()]
-                                }
                                 <Box
                                     onMouseDown={header.getResizeHandler()}
                                     onTouchStart={header.getResizeHandler()}

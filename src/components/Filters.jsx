@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   HStack,
   Icon,
@@ -11,14 +12,37 @@ import FilterPopover from "./FilterPopover";
 import DateFilter from "./DateFilter";
 
 const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter, isEditing, onToggleEdit }) => {
-  const filterValue = globalFilter || "";
+  const [value, setValue] = useState(globalFilter || "");
 
-  const onFilterChange = (value) => {
-    setGlobalFilter(value || undefined);
+  // Update local state if globalFilter changes externally
+  useEffect(() => {
+    setValue(globalFilter || "");
+  }, [globalFilter]);
+
+  // Debounce updates to the parent globalFilter
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setGlobalFilter(value || undefined);
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [value, setGlobalFilter]);
+
+  const onFilterChange = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleReset = () => {
+    setGlobalFilter(undefined);
+    setColumnFilters([]);
+    setValue("");
   };
 
   return (
     <HStack spacing={3}>
+      <Button size="sm" onClick={handleReset}>
+        Reset
+      </Button>
       <InputGroup size="sm" maxW="12rem">
         <InputLeftElement pointerEvents="none">
           <Icon as={SearchIcon} />
@@ -28,7 +52,7 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
           variant="filled"
           placeholder="Filter"
           borderRadius={5}
-          value={filterValue}
+          value={value}
           onChange={(e) => onFilterChange(e.target.value)}
         />
       </InputGroup>
@@ -41,7 +65,6 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
         setColumnFilters={setColumnFilters}
       />
     </HStack>
-
   );
 };
 export default Filters;

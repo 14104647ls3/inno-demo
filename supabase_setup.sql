@@ -34,5 +34,8 @@ begin
       "company" text
     );
   ', table_name);
+
+  -- Force PostgREST to refresh its schema cache
+  NOTIFY pgrst, 'reload schema';
 end;
 $$;
