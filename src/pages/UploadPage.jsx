@@ -147,7 +147,7 @@ const UploadPage = () => {
                     isLoading={loading}
                     isDisabled={!file}
                 >
-                    {loading ? "Uploading..." : "Upload & Seed Database"}
+                    {loading ? "Uploading..." : "Upload"}
                 </Button>
             </Box>
 
