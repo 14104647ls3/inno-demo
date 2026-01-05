@@ -124,16 +124,34 @@ const CsvTable = ({ tableName }) => {
     }, [tableName]);
 
     const filteredData = useMemo(() => {
+        if (!globalFilter) return data;
+
+        const terms = globalFilter.split(",").map(term => term.trim()).filter(term => term);
+        if (terms.length === 0) return data;
+
         return data.filter((row) => {
-            if (!globalFilter) return true;
-            const searchLower = globalFilter.toLowerCase();
+            return terms.some(term => {
+                const colonIndex = term.indexOf(":");
+                if (colonIndex !== -1) {
+                    const colName = term.substring(0, colonIndex).trim();
+                    const filterVal = term.substring(colonIndex + 1).trim().toLowerCase();
 
-            return columns.some((column) => {
-                // Exclude date from global search
-                if (column.accessorKey === "date") return false;
+                    const column = columns.find(c => c.accessorKey === colName);
+                    if (column) {
+                        const value = row[column.accessorKey];
+                        return String(value || "").toLowerCase().includes(filterVal);
+                    }
+                    return false;
+                }
 
-                const value = row[column.accessorKey];
-                return String(value || "").toLowerCase().includes(searchLower);
+                const searchLower = term.toLowerCase();
+                return columns.some((column) => {
+                    // Exclude date & deal_stage from global search
+                    if (column.accessorKey === "date" || column.accessorKey === "deal_stage") return false;
+
+                    const value = row[column.accessorKey];
+                    return String(value || "").toLowerCase().includes(searchLower);
+                });
             });
         });
     }, [data, globalFilter]);
