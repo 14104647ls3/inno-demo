@@ -21,6 +21,8 @@ This project is a small web app
 
 This project is a monorepo with a frontend and an AI server.
 Frontend is a Vite+React app and AI server is a FastAPI app, located in `ai-server` directory.
+The frontend is responsible for user interface and file upload.
+The AI server is responsible for LLM communication, interfacing tool calling, and graph generation.
 
 ### Prerequisites
 
