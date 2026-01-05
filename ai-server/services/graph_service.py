@@ -1,8 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')  # Non-GUI backend
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import plotly.express as px
 from io import BytesIO
 import base64
 from typing import Dict, Any, List, Literal
@@ -17,7 +15,7 @@ class GraphService:
         graph_data: Dict[str, Any],
         output_dir: str = "static/images",
         graph_type: str = "auto",
-        engine: Literal["matplotlib", "plotly"] = "plotly",
+        engine: Literal["matplotlib"] = "matplotlib",  # Only matplotlib supported
         width: int = 800,
         height: int = 600
     ) -> str:
@@ -28,7 +26,7 @@ class GraphService:
             graph_data: Data from Claude containing labels, datasets, etc.
             output_dir: Directory to save image
             graph_type: bar, line, pie, scatter, etc.
-            engine: matplotlib or plotly
+            engine: matplotlib only
             width, height: Image dimensions
             
         Returns:
@@ -43,121 +41,10 @@ class GraphService:
         filename = f"{uuid.uuid4()}.png"
         filepath = os.path.join(output_dir, filename)
         
-        if engine == "plotly":
-            self._save_plotly_graph(graph_data, filepath, graph_type, width, height)
-        else:
-            self._save_matplotlib_graph(graph_data, filepath, graph_type, width, height)
+        # Always use matplotlib
+        self._save_matplotlib_graph(graph_data, filepath, graph_type, width, height)
             
         return filename
-    
-    def _save_plotly_graph(
-        self,
-        graph_data: Dict[str, Any],
-        filepath: str,
-        graph_type: str,
-        width: int,
-        height: int
-    ) -> None:
-        """Save graph using Plotly"""
-        
-        try:
-            # Extract data
-            labels = graph_data.get('labels', [])
-            datasets = graph_data.get('datasets', [])
-            
-            # Auto-detect type if needed
-            if graph_type == "auto":
-                graph_type = graph_data.get('type', 'bar')
-            
-            # Create figure based on type
-            if graph_type == "bar":
-                fig = self._create_plotly_bar(labels, datasets)
-            elif graph_type == "line":
-                fig = self._create_plotly_line(labels, datasets)
-            elif graph_type == "pie":
-                fig = self._create_plotly_pie(labels, datasets)
-            elif graph_type == "scatter":
-                fig = self._create_plotly_scatter(labels, datasets)
-            else:
-                fig = self._create_plotly_bar(labels, datasets)  # Default
-            
-            # Update layout
-            fig.update_layout(
-                width=width,
-                height=height,
-                title=graph_data.get('title', ''),
-                template="plotly_white",
-                font=dict(size=12),
-                showlegend=True,
-                margin=dict(l=50, r=50, t=80, b=50)
-            )
-            
-            # Save to file
-            fig.write_image(filepath)
-            
-        except Exception as e:
-            print(f"Error generating Plotly graph: {e}")
-            self._save_error_image(str(e), filepath)
-    
-    def _create_plotly_bar(self, labels: List, datasets: List[Dict]) -> go.Figure:
-        """Create bar chart"""
-        fig = go.Figure()
-        
-        for dataset in datasets:
-            fig.add_trace(go.Bar(
-                name=dataset.get('label', 'Data'),
-                x=labels,
-                y=dataset.get('data', []),
-                marker_color=dataset.get('backgroundColor', '#3b82f6')
-            ))
-        
-        return fig
-    
-    def _create_plotly_line(self, labels: List, datasets: List[Dict]) -> go.Figure:
-        """Create line chart"""
-        fig = go.Figure()
-        
-        for dataset in datasets:
-            fig.add_trace(go.Scatter(
-                name=dataset.get('label', 'Data'),
-                x=labels,
-                y=dataset.get('data', []),
-                mode='lines+markers',
-                line=dict(color=dataset.get('borderColor', '#3b82f6'))
-            ))
-        
-        return fig
-    
-    def _create_plotly_pie(self, labels: List, datasets: List[Dict]) -> go.Figure:
-        """Create pie chart"""
-        # Use first dataset for pie chart
-        dataset = datasets[0] if datasets else {}
-        
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=dataset.get('data', []),
-            hole=0.3  # Donut chart
-        )])
-        
-        return fig
-    
-    def _create_plotly_scatter(self, labels: List, datasets: List[Dict]) -> go.Figure:
-        """Create scatter plot"""
-        fig = go.Figure()
-        
-        for dataset in datasets:
-            fig.add_trace(go.Scatter(
-                name=dataset.get('label', 'Data'),
-                x=labels,
-                y=dataset.get('data', []),
-                mode='markers',
-                marker=dict(
-                    size=8,
-                    color=dataset.get('backgroundColor', '#3b82f6')
-                )
-            ))
-        
-        return fig
     
     def _save_matplotlib_graph(
         self,

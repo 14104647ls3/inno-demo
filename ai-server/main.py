@@ -20,11 +20,7 @@ app = FastAPI(title="Lead Analytics AI API")
 # CORS for your Vite dev server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite default
-        "http://localhost:3000",  # Alternative
-        os.getenv("FRONTEND_URL", "")
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,7 +44,7 @@ class AnalysisRequest(BaseModel):
     table_name: str
     include_graph: bool = False 
     graph_type: str = "auto"
-    graph_engine: Literal["matplotlib", "plotly"] = "plotly"
+    graph_engine: Literal["matplotlib"] = "matplotlib"
     image_width: int = 800
     image_height: int = 600
 
