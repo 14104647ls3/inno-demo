@@ -32,8 +32,17 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
     setValue(newValue);
   };
 
+  const handleReset = () => {
+    setGlobalFilter(undefined);
+    setColumnFilters([]);
+    setValue("");
+  };
+
   return (
     <HStack spacing={3}>
+      <Button size="sm" onClick={handleReset}>
+        Reset
+      </Button>
       <InputGroup size="sm" maxW="12rem">
         <InputLeftElement pointerEvents="none">
           <Icon as={SearchIcon} />
