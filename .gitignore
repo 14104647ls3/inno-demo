@@ -25,7 +25,7 @@ dist-ssr
 .env
 ai-server/.env
 *.pyc
-ai-server/static/images/*
+ai-server/static/images/*.png
 
 
 .vercel

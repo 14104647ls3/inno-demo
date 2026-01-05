@@ -36,58 +36,46 @@ Frontend is a Vite+React app and AI server is a FastAPI app, located in `ai-serv
     git clone <repository_url>
     cd <repository_directory>```
 
-2. Install dependencies: ```bash
-    npm install```
-
-3. Install AI server dependencies: ```bash
-    cd ai-server
-
-   # create and activate virtual environment
-
-    python -m venv venv
-    venv\Scripts\activate
-
-   # install dependencies
-
-    pip install -r requirements.txt```
-
 ### Environment Configuration
 
-1. Create a `.env` file in the root of the project (copy from `.env.sample` if available).
+1. Create a `.env` file in the root of the project (copy from `.env.sample` and rename).
 2. Add your Supabase credentials:
 
     ```env
-    VITE_SUPABASE_URL=your_supabase_project_url
-    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    VITE_SUPABASE_URL=your supabase Project URL
+    VITE_SUPABASE_ANON_KEY=your supabase Publishable API Key
     VITE_AI_SERVER_URL = http://localhost:8000 # AI server URL, keep it as is
     ```
 
 3. `cd ai-server` and create a `.env` file in the `ai-server` directory with the following variables:
 
     ```env
-    ANTHROPIC_API_KEY=your_anthropic_api_key
-    SUPABASE_URL=your_supabase_project_url
-    SUPABASE_KEY=your_supabase_service_role_key
+    ANTHROPIC_API_KEY=your anthropic API Key
+    SUPABASE_URL=your supabase Project URL
+    SUPABASE_KEY=your supabase Publishable API Key
+    FRONTEND_URL=http://localhost:5173
     ```
 
 ### Database Setup
 
 1. Go to your Supabase project dashboard.
 2. Navigate to the **SQL Editor**.
-3. Run the contents of [supabase_setup.sql](./supabase_setup.sql).
+3. Copy & paste the contents of [supabase_setup.sql](./supabase_setup.sql) in SQL editor and run it.
     - This script creates the `master_uploads` table.
     - It defines the `create_leads_table` RPC function used to dynamically create tables for each CSV upload.
-4. Run the contents of [ai-server\readonly_json.sql](./ai-server/readonly_json.sql).
+4. Copy & paste the contents of [ai-server\readonly_json.sql](./ai-server/readonly_json.sql) in SQL editor and run it.
     - This script creates the `readonly_json` table.
 5. With the sample data having more than 1000 rows, you will need to increase the API limit in the Supabase dashboard to at least 10000 rows.
 
-## Deployment
+## Production Deployment
 
 1. To deploy the production environment with Docker compose:
 
 ```bash
 docker compose up --build
 ```
+
+## Development Deployment
 
 1. To deploy the development environment locally:
 
@@ -277,18 +265,4 @@ graph TD
     M --> N{Graph Requested?}
     N -- Yes --> O[Return Analysis + Generate Graph File]
     N -- No --> Q[Return Analysis Only]
-```
-
-### API Connection Graph
-
-A simplified view of the API connections:
-
-```mermaid
-graph LR
-    FE[Frontend] -- "POST /api/analyze" --> AI[AI Server]
-    AI -- "Anthropic SDK" --> LLM[Claude LLM]
-    
-    style FE fill:#d4e157,stroke:#333,stroke-width:2px
-    style AI fill:#4fc3f7,stroke:#333,stroke-width:2px
-    style LLM fill:#ab47bc,stroke:#333,stroke-width:2px,color:#fff
 ```
