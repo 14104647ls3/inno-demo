@@ -327,6 +327,7 @@ const CsvTable = ({ tableName }) => {
                         setColumnFilters={table.setColumnFilters}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter}
+                        resetSorting={table.resetSorting}
                     />
                     <EditToolbar
                         selectedCount={Object.keys(rowSelection).length}

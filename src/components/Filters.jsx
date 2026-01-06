@@ -11,7 +11,7 @@ import SearchIcon from "./icons/SearchIcon";
 import FilterPopover from "./FilterPopover";
 import DateFilter from "./DateFilter";
 
-const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter, isEditing, onToggleEdit }) => {
+const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilter, isEditing, onToggleEdit, resetSorting }) => {
   const [value, setValue] = useState(globalFilter || "");
 
   // Update local state if globalFilter changes externally
@@ -36,6 +36,7 @@ const Filters = ({ columnFilters, setColumnFilters, globalFilter, setGlobalFilte
     setGlobalFilter(undefined);
     setColumnFilters([]);
     setValue("");
+    if (resetSorting) resetSorting();
   };
 
   return (
